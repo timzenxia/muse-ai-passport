@@ -232,7 +232,8 @@ images, the home-network tunnel, OTA and the charging state are not supported.
 Set your SDK token in `build-muse-ai-passport/sdkconfig` (ignored by Git).
 Build with `tools/muse/board.sh build ai-passport` and flash with
 `tools/muse/board.sh flash ai-passport PORT`. The stock firmware's NVS layout
-differs, so erase the flash first (`idf.py -p PORT erase-flash`) or the
+differs, so erase the flash first
+(`python -m esptool --chip esp32c3 -p PORT erase-flash`) or the
 firmware won't start. Back up the original 8 MB firmware before that; keep it
 outside Git:
 
