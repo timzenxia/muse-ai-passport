@@ -84,6 +84,9 @@ menu "Muse"
         config MUSE_BOARD_WAVESHARE_S3_LCD7
             bool "Waveshare ESP32-S3-Touch-LCD-7 (800x480 touch LCD, no audio)"
             depends on IDF_TARGET_ESP32S3
+        config MUSE_BOARD_AI_PASSPORT
+            bool "FoloToy AI Passport (ESP32-C3, three buttons, no touch)"
+            depends on IDF_TARGET_ESP32C3
     endchoice
 
     config MUSE_ENABLED
@@ -109,6 +112,7 @@ menu "Muse"
         default "fnk0104b" if MUSE_BOARD_FNK0104B
         default "guition_jc3248w535" if MUSE_BOARD_GUITION_JC3248W535
         default "waveshare_s3_lcd7" if MUSE_BOARD_WAVESHARE_S3_LCD7
+        default "ai_passport" if MUSE_BOARD_AI_PASSPORT
         default "none"
 
     # The Muse tools' serial port: the console UART behind the board's USB

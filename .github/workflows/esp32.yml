@@ -176,6 +176,9 @@ jobs:
           - board: muse-fnk0104b
             target: esp32s3
             overlays: ";devices/sdkconfig.muse;devices/sdkconfig.muse-fnk0104b"
+          - board: muse-ai-passport
+            target: esp32c3
+            overlays: ";devices/sdkconfig.muse;devices/sdkconfig.muse-ai-passport"
     defaults:
       run:
         shell: bash
