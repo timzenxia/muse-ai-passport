@@ -12,12 +12,14 @@ and read Muse's reply on its screen, in Chinese too.
 > stock firmware; back it up first (below). Proceed at your own risk.
 
 This repository is the full SDK with the port applied, so it builds and flashes
-as is. The port is also proposed upstream:
-[#31](https://github.com/facebookincubator/muse-gadget-sdk/pull/31) (pairing
-fix), [#32](https://github.com/facebookincubator/muse-gadget-sdk/pull/32)
-(CJK captions) and [#33](https://github.com/facebookincubator/muse-gadget-sdk/pull/33)
-(the board), for [issue #11](https://github.com/facebookincubator/muse-gadget-sdk/issues/11).
-The SDK's own overview is in [`README.upstream.md`](README.upstream.md).
+as is. Two pieces are already in the upstream SDK:
+[#31](https://github.com/facebookincubator/muse-gadget-sdk/pull/31) (the pairing
+fix) and [#32](https://github.com/facebookincubator/muse-gadget-sdk/pull/32)
+(CJK captions). The board itself is under review in
+[#33](https://github.com/facebookincubator/muse-gadget-sdk/pull/33), for
+[issue #11](https://github.com/facebookincubator/muse-gadget-sdk/issues/11); this
+repository tracks that branch on top of the latest upstream `main`. The SDK's
+own overview is in [`README.upstream.md`](README.upstream.md).
 
 ## What works
 
@@ -25,15 +27,14 @@ The SDK's own overview is in [`README.upstream.md`](README.upstream.md).
 |---|---|
 | Pairing | BLE pairing with the Muse app, confirmed with the OK button; Wi-Fi (2.4 GHz) |
 | Push-to-talk | Hold **OK** to record; the voice note streams to Muse as you speak |
-| Replies | Text on screen, 3 to 9 s after you let go; Chinese and Japanese included |
+| Replies | Text in the caption band at the bottom, a few seconds to half a minute after you let go; Chinese and Japanese included. A reply too big for the device shows "REPLY TOO LONG: SEE MUSE APP" |
 | Menu | **UP** / **DOWN** open the menu and move through it: volume, brightness, mic gain, sleep, Status, Battery, power off |
 | Battery | Level and voltage from the CW2017 gauge |
-| Screen | 240x320 ST7789P3, rounded corners masked, captions kept clear of the case |
+| Screen | 240x320 ST7789P3 with the SDK's compact layout (as on the StickS3), rounded corners masked |
 
 Not supported: spoken replies (Muse sends text only; a board with PSRAM can add
 its own TTS), images, the home-network tunnel, over-the-air updates and the
-charging state. Untested: long-term stability, deep-sleep current, very long
-replies.
+charging state. Untested: long-term stability and deep-sleep current.
 
 ## Hardware
 
@@ -113,7 +114,10 @@ together. The port:
 
 - moves ~42 KB of driver code out of IRAM, and trims the BLE, Wi-Fi, TCP and
   LVGL buffers ([`esp32/devices/sdkconfig.muse-ai-passport`](esp32/devices/sdkconfig.muse-ai-passport));
-- reuses the Cardputer ADV's smaller session buffers, with 12 KB inbound frames;
+- reuses the Cardputer ADV's smaller session buffers, with 12 KB inbound frames
+  instead of its 17 KB (with 17 KB the session comes up, but every voice note
+  fails for lack of heap). A reply frame over 12 KB ends the session, which
+  reconnects, and the screen says "REPLY TOO LONG: SEE MUSE APP";
 - sizes the pairing decrypt buffers to the message instead of two fixed 8 KB;
 - draws the menu's button hint flat, since a turned one needs a 14 KB layer;
 - adds a 16x16 GNU Unifont fallback for CJK captions (in flash, no RAM), and

@@ -9,11 +9,11 @@ ESP32-C3 可穿戴设备）。用 Muse App 配对后，按住按键说话，Muse
 
 > **实验性项目。** 与 Meta、FoloToy 均无关联。刷机会覆盖出厂固件，请先按下文备份。风险自负。
 
-本仓库是打好移植补丁的完整 SDK，克隆下来就能直接编译、烧录。这些改动也已提交给上游：
-[#31](https://github.com/facebookincubator/muse-gadget-sdk/pull/31)（配对修复）、
-[#32](https://github.com/facebookincubator/muse-gadget-sdk/pull/32)（中日韩字幕）、
-[#33](https://github.com/facebookincubator/muse-gadget-sdk/pull/33)（板级支持），对应
-[issue #11](https://github.com/facebookincubator/muse-gadget-sdk/issues/11)。
+本仓库是打好移植补丁的完整 SDK，克隆下来就能直接编译、烧录。其中两部分已经合并进上游 SDK：
+[#31](https://github.com/facebookincubator/muse-gadget-sdk/pull/31)（配对修复）和
+[#32](https://github.com/facebookincubator/muse-gadget-sdk/pull/32)（中日韩字幕）。
+板级支持本身还在 [#33](https://github.com/facebookincubator/muse-gadget-sdk/pull/33) 中审核，对应
+[issue #11](https://github.com/facebookincubator/muse-gadget-sdk/issues/11)；本仓库跟踪该分支，并基于上游最新的 `main`。
 SDK 原本的介绍见 [`README.upstream.md`](README.upstream.md)。
 
 ## 已支持的功能
@@ -22,13 +22,13 @@ SDK 原本的介绍见 [`README.upstream.md`](README.upstream.md)。
 |---|---|
 | 配对 | 通过 Muse App 蓝牙配对，按 OK 键确认；Wi-Fi（仅 2.4 GHz） |
 | 按住说话 | 按住 **OK** 录音，边说边上传给 Muse |
-| 回复 | 松开后 3 到 9 秒，回复以文字显示在屏幕上，支持中文和日文 |
+| 回复 | 松开后几秒到半分钟内，回复以文字显示在屏幕底部的字幕条里，支持中文和日文。回复过大、设备装不下时显示 "REPLY TOO LONG: SEE MUSE APP" |
 | 菜单 | **UP** / **DOWN** 打开菜单并上下移动：音量、亮度、麦克风增益、休眠、Status、Battery、关机 |
 | 电量 | 由 CW2017 电量计读取电量百分比和电压 |
-| 屏幕 | 240x320 ST7789P3，遮住圆角，字幕避开外壳遮挡 |
+| 屏幕 | 240x320 ST7789P3，使用 SDK 的紧凑布局（与 StickS3 相同），遮住圆角 |
 
 暂不支持：语音回复（Muse 目前只返回文字；带 PSRAM 的板子可以自行接入 TTS）、显示图片、家庭网络隧道、OTA 升级、充电状态。
-尚未测试：长时间稳定性、深度睡眠功耗、超长回复。
+尚未测试：长时间稳定性、深度睡眠功耗。
 
 ## 硬件
 
@@ -101,7 +101,8 @@ ESP32-C3 只有约 400 KB SRAM，代码和堆共用这一块内存，也没有 P
 
 - 把约 42 KB 驱动代码移出 IRAM，并收紧 BLE、Wi-Fi、TCP、LVGL 的缓冲
   （见 [`esp32/devices/sdkconfig.muse-ai-passport`](esp32/devices/sdkconfig.muse-ai-passport)）；
-- 沿用 Cardputer ADV 的小会话缓冲，入站帧为 12 KB；
+- 沿用 Cardputer ADV 的小会话缓冲，入站帧为 12 KB，而不是它的 17 KB（用 17 KB 时会话能建立，但每次语音都会因内存不足失败）。
+  超过 12 KB 的回复帧会让会话断开并自动重连，屏幕显示 "REPLY TOO LONG: SEE MUSE APP"；
 - 配对解密缓冲按消息实际大小分配，不再固定申请两块 8 KB；
 - 菜单的按键提示改为横排，旋转显示需要一块 14 KB 的图层；
 - 字幕使用 16x16 的 GNU Unifont 作为中日韩后备字体（放在 flash 中，不占内存），并支持无空格文字的换行。
